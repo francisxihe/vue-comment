@@ -65,10 +65,15 @@ export default class Watcher implements DepTarget {
   onTrigger?: ((event: DebuggerEvent) => void) | undefined
 
   constructor(
+    // vue组件实例
     vm: Component | null,
+    // 用于指定哪些数据需要被监控
     expOrFn: string | (() => any),
+    // 数据变化时的回调函数
     cb: Function,
+    // 配置对象
     options?: WatcherOptions | null,
+    // 这个 Watcher 是否是渲染 Watcher，用于组件的渲染和更新
     isRenderWatcher?: boolean
   ) {
     recordEffectScope(
@@ -128,7 +133,7 @@ export default class Watcher implements DepTarget {
   }
 
   /**
-   * Evaluate the getter, and re-collect dependencies.
+   * 评估getter, 并且重新收集依赖
    */
   get() {
     pushTarget(this)
@@ -170,6 +175,7 @@ export default class Watcher implements DepTarget {
 
   /**
    * Clean up for dependency collection.
+   * 清理和更新依赖收集
    */
   cleanupDeps() {
     let i = this.deps.length
@@ -192,6 +198,7 @@ export default class Watcher implements DepTarget {
   /**
    * Subscriber interface.
    * Will be called when a dependency changes.
+   * 订阅者接口，当依赖更新时将被调用
    */
   update() {
     /* istanbul ignore else */
@@ -210,7 +217,9 @@ export default class Watcher implements DepTarget {
    */
   run() {
     if (this.active) {
+      // 获取数据
       const value = this.get()
+      // 如果数据发生变化或是对象数据或是深层监听
       if (
         value !== this.value ||
         // Deep watchers and watchers on Object/Arrays should fire even
@@ -222,6 +231,7 @@ export default class Watcher implements DepTarget {
         // set new value
         const oldValue = this.value
         this.value = value
+        // 如果是开发者创建的，通过异常处理方法执行回调，否则直接执行回调
         if (this.user) {
           const info = `callback for watcher "${this.expression}"`
           invokeWithErrorHandling(

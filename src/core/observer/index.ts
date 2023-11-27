@@ -16,10 +16,11 @@ import {
   noop
 } from '../util/index'
 import { isReadonly, isRef, TrackOpTypes, TriggerOpTypes } from '../../v3'
+import { rawMap } from '../../v3/reactivity/reactive'
 
 const arrayKeys = Object.getOwnPropertyNames(arrayMethods)
 
-const NO_INITIAL_VALUE = {}
+const NO_INIITIAL_VALUE = {}
 
 /**
  * In some cases we may want to disable observation inside a component's
@@ -40,10 +41,8 @@ const mockDep = {
 } as Dep
 
 /**
- * Observer class that is attached to each observed
- * object. Once attached, the observer converts the target
- * object's property keys into getter/setters that
- * collect dependencies and dispatch updates.
+ *  Observer类会通过递归的方式把一个对象的所有属性都转化成可观测对象，
+ *  把目标对象的属性键转换为 getter 和 setter，用于收集依赖关系并分发更新。
  */
 export class Observer {
   dep: Dep
@@ -53,20 +52,27 @@ export class Observer {
     // this.value = value
     this.dep = mock ? mockDep : new Dep()
     this.vmCount = 0
+    // 给value新增一个__ob__属性，值为该value的Observer实例
     def(value, '__ob__', this)
+    // 如果value是数组
     if (isArray(value)) {
+      // 非模拟环境，出于安全或者兼容性考虑模拟环境不允许直接修改对象__proto__
       if (!mock) {
+        // 检查对象是否可以访问其原型链
         if (hasProto) {
           /* eslint-disable no-proto */
+          // 将数组的原型指向一个包含重写的数组方法的对象（arrayMethods）
           ;(value as any).__proto__ = arrayMethods
           /* eslint-enable no-proto */
         } else {
+          // 遍历 arrayKeys 并使用 def 函数直接在数组对象上定义这些方法
           for (let i = 0, l = arrayKeys.length; i < l; i++) {
             const key = arrayKeys[i]
             def(value, key, arrayMethods[key])
           }
         }
       }
+      // 非浅观察
       if (!shallow) {
         this.observeArray(value)
       }
@@ -75,17 +81,18 @@ export class Observer {
        * Walk through all properties and convert them into
        * getter/setters. This method should only be called when
        * value type is Object.
+       * 遍历所有属性并将它们转换为 getter/setter。仅当值类型为 Object 时才应调用此方法。
        */
       const keys = Object.keys(value)
       for (let i = 0; i < keys.length; i++) {
         const key = keys[i]
-        defineReactive(value, key, NO_INITIAL_VALUE, undefined, shallow, mock)
+        defineReactive(value, key, NO_INIITIAL_VALUE, undefined, shallow, mock)
       }
     }
   }
 
   /**
-   * Observe a list of Array items.
+   * 遍历数组中的每个元素，递归地将它们转换为响应式对象
    */
   observeArray(value: any[]) {
     for (let i = 0, l = value.length; i < l; i++) {
@@ -100,6 +107,8 @@ export class Observer {
  * Attempt to create an observer instance for a value,
  * returns the new observer if successfully observed,
  * or the existing observer if the value already has one.
+ * 试图给value创建一个新的observer实例
+ * 创建成功返回新的observer，如果value存在observer则直接返回已有observer
  */
 export function observe(
   value: any,
@@ -115,6 +124,7 @@ export function observe(
     (isArray(value) || isPlainObject(value)) &&
     Object.isExtensible(value) &&
     !value.__v_skip /* ReactiveFlags.SKIP */ &&
+    !rawMap.has(value) &&
     !isRef(value) &&
     !(value instanceof VNode)
   ) {
@@ -133,6 +143,7 @@ export function defineReactive(
   shallow?: boolean,
   mock?: boolean
 ) {
+  // 初始化dep
   const dep = new Dep()
 
   const property = Object.getOwnPropertyDescriptor(obj, key)
@@ -140,16 +151,19 @@ export function defineReactive(
     return
   }
 
-  // cater for pre-defined getter/setters
+  // 如果对象的属性已经定义了getter或setter方法，则保留这些方法
   const getter = property && property.get
   const setter = property && property.set
+  // 如果没有提供初始值，将对象当前属性值作为初始值。
+  // arguments.length === 2 说明没有传入val
   if (
     (!getter || setter) &&
-    (val === NO_INITIAL_VALUE || arguments.length === 2)
+    (val === NO_INIITIAL_VALUE || arguments.length === 2)
   ) {
     val = obj[key]
   }
 
+  // 深度监听
   let childOb = !shallow && observe(val, false, mock)
   Object.defineProperty(obj, key, {
     enumerable: true,
@@ -157,6 +171,7 @@ export function defineReactive(
     get: function reactiveGetter() {
       const value = getter ? getter.call(obj) : val
       if (Dep.target) {
+        // 添加依赖
         if (__DEV__) {
           dep.depend({
             target: obj,
@@ -195,6 +210,7 @@ export function defineReactive(
         val = newVal
       }
       childOb = !shallow && observe(newVal, false, mock)
+      // 通知所有依赖更新
       if (__DEV__) {
         dep.notify({
           type: TriggerOpTypes.SET,

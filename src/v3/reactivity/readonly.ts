@@ -32,8 +32,8 @@ export type DeepReadonly<T> = T extends Builtin
   ? { readonly [K in keyof T]: DeepReadonly<T[K]> }
   : Readonly<T>
 
-const rawToReadonlyFlag = `__v_rawToReadonly`
-const rawToShallowReadonlyFlag = `__v_rawToShallowReadonly`
+const rawToReadonlyMap = new WeakMap()
+const rawToShallowReadonlyMap = new WeakMap()
 
 export function readonly<T extends object>(
   target: T
@@ -57,26 +57,20 @@ function createReadonly(target: any, shallow: boolean) {
     return target as any
   }
 
-  if (__DEV__ && !Object.isExtensible(target)) {
-    warn(
-      `Vue 2 does not support creating readonly proxy for non-extensible object.`
-    )
-  }
-
   // already a readonly object
   if (isReadonly(target)) {
     return target as any
   }
 
   // already has a readonly proxy
-  const existingFlag = shallow ? rawToShallowReadonlyFlag : rawToReadonlyFlag
-  const existingProxy = target[existingFlag]
+  const map = shallow ? rawToShallowReadonlyMap : rawToReadonlyMap
+  const existingProxy = map.get(target)
   if (existingProxy) {
     return existingProxy
   }
 
   const proxy = Object.create(Object.getPrototypeOf(target))
-  def(target, existingFlag, proxy)
+  map.set(target, proxy)
 
   def(proxy, ReactiveFlags.IS_READONLY, true)
   def(proxy, ReactiveFlags.RAW, target)

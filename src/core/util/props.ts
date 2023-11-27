@@ -19,6 +19,7 @@ type PropOptions = {
   validator?: Function
 }
 
+/** 验证Prop */
 export function validateProp(
   key: string,
   propOptions: Object,
@@ -30,12 +31,17 @@ export function validateProp(
   let value = propsData[key]
   // boolean casting
   const booleanIndex = getTypeIndex(Boolean, prop.type)
+  // 存在布尔类型
   if (booleanIndex > -1) {
+    // 如果属性不存在且没有默认值，则默认为false。
     if (absent && !hasOwn(prop, 'default')) {
       value = false
-    } else if (value === '' || value === hyphenate(key)) {
+    }
+    // 如果属性值为空字符串或与属性名相同（经过连字符处理）
+    else if (value === '' || value === hyphenate(key)) {
       // only cast empty string / same name to boolean if
       // boolean has higher priority
+      // 如果布尔值具有更高的优先级，则仅将空字符串/相同名称转换为布尔值(true)
       const stringIndex = getTypeIndex(String, prop.type)
       if (stringIndex < 0 || booleanIndex < stringIndex) {
         value = true

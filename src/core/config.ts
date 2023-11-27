@@ -62,6 +62,7 @@ export default {
 
   /**
    * Error handler for watcher errors
+   * watcher 错误处理方法
    */
   errorHandler: null,
 

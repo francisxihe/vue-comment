@@ -13,6 +13,7 @@ import { EffectScope } from 'v3/reactivity/effectScope'
 
 let uid = 0
 
+/** 初始化vue */
 export function initMixin(Vue: typeof Component) {
   Vue.prototype._init = function (options?: Record<string, any>) {
     const vm: Component = this
@@ -28,6 +29,7 @@ export function initMixin(Vue: typeof Component) {
     }
 
     // a flag to mark this as a Vue instance without having to do instanceof
+    // 将对象标记为vue实例，避免被 instanceof
     // check
     vm._isVue = true
     // avoid instances from being observed
@@ -40,6 +42,9 @@ export function initMixin(Vue: typeof Component) {
       // optimize internal component instantiation
       // since dynamic options merging is pretty slow, and none of the
       // internal component options needs special treatment.
+      //优化内部组件实例化
+      //因为动态选项合并非常慢，没有一个是内部组件选项需要特殊处理。
+      //初始化内部组件
       initInternalComponent(vm, options as any)
     } else {
       vm.$options = mergeOptions(
@@ -56,9 +61,13 @@ export function initMixin(Vue: typeof Component) {
     }
     // expose real self
     vm._self = vm
+    // 初始化生命周期
     initLifecycle(vm)
+    // 初始化事件
     initEvents(vm)
+    // 初始化渲染
     initRender(vm)
+    // 调用生命周期钩子函数
     callHook(vm, 'beforeCreate', undefined, false /* setContext */)
     initInjections(vm) // resolve injections before data/props
     initState(vm)

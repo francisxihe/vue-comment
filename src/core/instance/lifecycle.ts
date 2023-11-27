@@ -18,7 +18,6 @@ import {
   invokeWithErrorHandling
 } from '../util/index'
 import { currentInstance, setCurrentInstance } from 'v3/currentInstance'
-import { getCurrentScope } from 'v3/reactivity/effectScope'
 import { syncSetupProxy } from 'v3/apiSetup'
 
 export let activeInstance: any = null
@@ -107,13 +106,16 @@ export function lifecycleMixin(Vue: typeof Component) {
 
   Vue.prototype.$destroy = function () {
     const vm: Component = this
+    // 销毁锁，如果正在被销毁，直接返回
     if (vm._isBeingDestroyed) {
       return
     }
+    // 触发生命周期钩子函数beforeDestroy
     callHook(vm, 'beforeDestroy')
     vm._isBeingDestroyed = true
     // remove self from parent
     const parent = vm.$parent
+    // 如果当前实例有父级实例，同时该父级实例没有被销毁并且不是抽象组件，从其父组件的children中移除
     if (parent && !parent._isBeingDestroyed && !vm.$options.abstract) {
       remove(parent.$children, vm)
     }
@@ -122,16 +124,22 @@ export function lifecycleMixin(Vue: typeof Component) {
     vm._scope.stop()
     // remove reference from data ob
     // frozen object may not have observer.
+    // 检查 Vue 实例的数据对象是否有一个观察者，如果有，减少这个观察者关联的 Vue 实例计数
     if (vm._data.__ob__) {
       vm._data.__ob__.vmCount--
     }
     // call the last hook...
+    // 将当前状态置为_isDestroyed
     vm._isDestroyed = true
     // invoke destroy hooks on current rendered tree
+    // 使用 Vue 的虚拟 DOM 算法（__patch__ 方法）来清理组件的 DOM。
+    // 它将组件的虚拟节点（vm._vnode）与 null 进行比较，用来移除所有相关的 DOM 元素。
     vm.__patch__(vm._vnode, null)
     // fire destroyed hook
+    // 触发生命周期钩子函数destroyed
     callHook(vm, 'destroyed')
     // turn off all instance listeners.
+    // 移除实例上的所有事件监听器
     vm.$off()
     // remove __vue__ reference
     if (vm.$el) {
@@ -150,9 +158,12 @@ export function mountComponent(
   hydrating?: boolean
 ): Component {
   vm.$el = el
+  // 判断实例上是否存在渲染函数
   if (!vm.$options.render) {
+    // 则设置一个默认的渲染函数createEmptyVNode
     // @ts-expect-error invalid type
     vm.$options.render = createEmptyVNode
+    // dev环境报警告
     if (__DEV__) {
       /* istanbul ignore if */
       if (
@@ -174,22 +185,26 @@ export function mountComponent(
       }
     }
   }
+  // 调用callHook函数来触发beforeMount
   callHook(vm, 'beforeMount')
 
   let updateComponent
-  /* istanbul ignore if */
+
+  // dev环境开启性能追踪时执行
   if (__DEV__ && config.performance && mark) {
     updateComponent = () => {
       const name = vm._name
       const id = vm._uid
       const startTag = `vue-perf-start:${id}`
       const endTag = `vue-perf-end:${id}`
-
+      // 记录vm._render()的执行时间
       mark(startTag)
       const vnode = vm._render()
       mark(endTag)
+      // 通过 measure() 函数，性能数据被记录下来
       measure(`vue ${name} render`, startTag, endTag)
 
+      // 同上，记录vm._update()的执行时间并记录
       mark(startTag)
       vm._update(vnode, hydrating)
       mark(endTag)
@@ -197,10 +212,14 @@ export function mountComponent(
     }
   } else {
     updateComponent = () => {
+      // 1. 执行渲染函数vm._render()
+      // 2. 执行vm._update()方法对最新的VNode节点树与上一次渲染的旧VNode节点树进行对比并更新DOM节点
       vm._update(vm._render(), hydrating)
     }
   }
 
+  // 执行更新操作前，如果vm已经处于被挂载状态并且没有被销毁，则认为是更新视图
+  // 调用callHook函数来触发beforeUpdate
   const watcherOptions: WatcherOptions = {
     before() {
       if (vm._isMounted && !vm._isDestroyed) {
@@ -213,20 +232,25 @@ export function mountComponent(
     watcherOptions.onTrack = e => callHook(vm, 'renderTracked', [e])
     watcherOptions.onTrigger = e => callHook(vm, 'renderTriggered', [e])
   }
-
   // we set this to vm._watcher inside the watcher's constructor
   // since the watcher's initial patch may call $forceUpdate (e.g. inside child
   // component's mounted hook), which relies on vm._watcher being already defined
+  // 在 Watcher 构造函数中，我们设置 this 指向 vm._watcher
+  // Watcher 的初始补丁（patch）可能调用 $forceUpdate（例如在子组件的 mounted 钩子中），
+  // 这依赖于 vm._watcher 已经被定义。
   new Watcher(
     vm,
+    // 通常在 Vue 组件的数据变化时被调用，用于触发组件的重新渲染
     updateComponent,
     noop,
     watcherOptions,
+    // 标识这个 Watcher 实例是一个渲染 Watcher，负责渲染和更新组件的 DOM。
     true /* isRenderWatcher */
   )
   hydrating = false
 
   // flush buffer for flush: "pre" watchers queued in setup()
+  // 用于刷新的刷新缓冲区：“预”观察者在 setup() 中排队
   const preWatchers = vm._preWatchers
   if (preWatchers) {
     for (let i = 0; i < preWatchers.length; i++) {
@@ -399,8 +423,7 @@ export function callHook(
 ) {
   // #7573 disable dep collection when invoking lifecycle hooks
   pushTarget()
-  const prevInst = currentInstance
-  const prevScope = getCurrentScope()
+  const prev = currentInstance
   setContext && setCurrentInstance(vm)
   const handlers = vm.$options[hook]
   const info = `${hook} hook`
@@ -412,10 +435,6 @@ export function callHook(
   if (vm._hasHookEvent) {
     vm.$emit('hook:' + hook)
   }
-  if (setContext) {
-    setCurrentInstance(prevInst)
-    prevScope && prevScope.on()
-  }
-
+  setContext && setCurrentInstance(prev)
   popTarget()
 }

@@ -286,7 +286,9 @@ export function genStaticKeys(
   modules: Array<{ staticKeys?: string[] } /* ModuleOptions */>
 ): string {
   return modules
-    .reduce<string[]>((keys, m) => keys.concat(m.staticKeys || []), [])
+    .reduce((keys, m) => {
+      return keys.concat(m.staticKeys || [])
+    }, [] as string[])
     .join(',')
 }
 

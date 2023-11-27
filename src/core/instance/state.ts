@@ -303,6 +303,7 @@ function initMethods(vm: Component, methods: Object) {
   }
 }
 
+/** 初始化vue实例上的watch */
 function initWatch(vm: Component, watch: Object) {
   for (const key in watch) {
     const handler = watch[key]
