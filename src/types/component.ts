@@ -19,7 +19,9 @@ export declare class Component {
   // extend
   static extend: GlobalAPI['extend']
   static superOptions: Record<string, any>
+  /** 用于扩展组件时的一个属性，它包含了在使用 Vue.extend() 方法创建子组件时指定的额外选项 */
   static extendOptions: Record<string, any>
+  /** 存储该构造函数在某一时刻的选项的快照。这个快照是“封闭”的，意味着它是不可变的，用于记录创建构造函数时的初始状态。*/ 
   static sealedOptions: Record<string, any>
   static super: typeof Component
   // assets

@@ -245,9 +245,11 @@ export function parseHTML(html, options: HTMLParserOptions) {
     const unarySlash = match.unarySlash
 
     if (expectHTML) {
+      // 如果上一个标签是 <p>（存储在 lastTag 中）并且当前标签不是短语标签
       if (lastTag === 'p' && isNonPhrasingTag(tagName)) {
         parseEndTag(lastTag)
       }
+      // 当前标签可以不闭合并且和上一个标签相同，闭合标签
       if (canBeLeftOpenTag(tagName) && lastTag === tagName) {
         parseEndTag(tagName)
       }
@@ -290,14 +292,19 @@ export function parseHTML(html, options: HTMLParserOptions) {
     }
   }
 
+  /** 处理结束标签 */
   function parseEndTag(tagName?: any, start?: any, end?: any) {
     let pos, lowerCasedTagName
+    // 如果 start 或 end 未提供，它们将被设置为当前解析器的索引位置
     if (start == null) start = index
     if (end == null) end = index
 
-    // Find the closest opened tag of the same type
+    // 寻找最近的同类型开放标签
+    // 如果提供了 tagName
     if (tagName) {
+      // 将 tagName 转换为小写
       lowerCasedTagName = tagName.toLowerCase()
+      // 在 stack（一个跟踪开放标签的栈）中从后向前搜索与之匹配的开放标签
       for (pos = stack.length - 1; pos >= 0; pos--) {
         if (stack[pos].lowerCasedTag === lowerCasedTagName) {
           break
@@ -308,6 +315,7 @@ export function parseHTML(html, options: HTMLParserOptions) {
       pos = 0
     }
 
+    // 如果找到匹配的开放标签
     if (pos >= 0) {
       // Close all the open elements, up the stack
       for (let i = stack.length - 1; i >= pos; i--) {
@@ -317,6 +325,8 @@ export function parseHTML(html, options: HTMLParserOptions) {
             end: stack[i].end
           })
         }
+        // 如果定义了 options.end 回调函数，每个没有闭合的标签都会调用它
+        // 并且传入标签名和它在模板中的起始和结束位置。
         if (options.end) {
           options.end(stack[i].tag, start, end)
         }

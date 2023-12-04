@@ -84,6 +84,7 @@ export function createASTElement(
  * Convert HTML string to AST.
  */
 export function parse(template: string, options: CompilerOptions): ASTElement {
+  // 这是一个用于输出警告信息的函数，通常用于开发过程中的调试。
   warn = options.warn || baseWarn
 
   platformIsPreTag = options.isPreTag || no
@@ -97,12 +98,15 @@ export function parse(template: string, options: CompilerOptions): ASTElement {
       el.attrsMap['v-bind:is'] ||
       !(el.attrsMap.is ? isReservedTag(el.attrsMap.is) : isReservedTag(el.tag))
     )
+  // 从options.modules取出相应的模块
   transforms = pluckModuleFunction(options.modules, 'transformNode')
   preTransforms = pluckModuleFunction(options.modules, 'preTransformNode')
   postTransforms = pluckModuleFunction(options.modules, 'postTransformNode')
 
+  // ===TODO===分隔符？
   delimiters = options.delimiters
 
+  // 在解析过程中跟踪元素
   const stack: any[] = []
   const preserveWhitespace = options.preserveWhitespace !== false
   const whitespaceOption = options.whitespace
@@ -112,6 +116,7 @@ export function parse(template: string, options: CompilerOptions): ASTElement {
   let inPre = false
   let warned = false
 
+  // 避免重复警告
   function warnOnce(msg, range) {
     if (!warned) {
       warned = true
@@ -128,7 +133,7 @@ export function parse(template: string, options: CompilerOptions): ASTElement {
     if (!stack.length && element !== root) {
       // allow root elements with v-if, v-else-if and v-else
       if (root.if && (element.elseif || element.else)) {
-        if (__DEV__) {
+        if (__DEV__) {`1`
           checkRootConstraints(element)
         }
         addIfCondition(root, {
@@ -212,6 +217,7 @@ export function parse(template: string, options: CompilerOptions): ASTElement {
     }
   }
 
+  // 调用parseHTML解析template
   parseHTML(template, {
     warn,
     expectHTML: options.expectHTML,
@@ -312,7 +318,6 @@ export function parse(template: string, options: CompilerOptions): ASTElement {
         closeElement(element)
       }
     },
-
     end(tag, start, end) {
       const element = stack[stack.length - 1]
       // pop stack
@@ -323,7 +328,6 @@ export function parse(template: string, options: CompilerOptions): ASTElement {
       }
       closeElement(element)
     },
-
     chars(text: string, start?: number, end?: number) {
       if (!currentParent) {
         if (__DEV__) {

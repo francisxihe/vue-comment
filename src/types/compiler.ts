@@ -3,20 +3,29 @@ import { BindingMetadata } from 'sfc/types'
 export type CompilerOptions = {
   warn?: Function // allow customizing warning in different environments; e.g. node
   modules?: Array<ModuleOptions> // platform specific modules; e.g. style; class
-  directives?: { [key: string]: Function } // platform specific directives
+  /** 定义平台特定的指令 */
+  directives?: { [key: string]: Function } 
+  /** 列出应被视为静态的 AST 属性，用于优化 */
   staticKeys?: string // a list of AST properties to be considered static; for optimization
-  isUnaryTag?: (tag: string) => boolean | undefined // check if a tag is unary for the platform
-  canBeLeftOpenTag?: (tag: string) => boolean | undefined // check if a tag can be left opened
-  isReservedTag?: (tag: string) => boolean | undefined // check if a tag is a native for the platform
+  /** 检查一个标签是否为单标签 */
+  isUnaryTag?: (tag: string) => boolean | undefined 
+  /** 检查一个标签是否可以不闭合 */
+  canBeLeftOpenTag?: (tag: string) => boolean | undefined 
+  /** 检查一个标签是否为平台原生标签 */
+  isReservedTag?: (tag: string) => boolean | undefined 
+  /** 是否保留元素之间的空白（已弃用） */
   preserveWhitespace?: boolean // preserve whitespace between elements? (Deprecated)
-  whitespace?: 'preserve' | 'condense' // whitespace handling strategy
-  optimize?: boolean // optimize static content?
+  /** 空白处理策略 */
+  whitespace?: 'preserve' | 'condense' 
+  /** 是否优化静态内容 */
+  optimize?: boolean 
 
   // web specific
   mustUseProp?: (tag: string, type: string | null, name: string) => boolean // check if an attribute should be bound as a property
   isPreTag?: (attr: string) => boolean | null // check if a tag needs to preserve whitespace
   getTagNamespace?: (tag: string) => string | undefined // check the namespace for a tag
-  expectHTML?: boolean // only false for non-web builds
+  /** false针对非web构建 */
+  expectHTML?: boolean 
   isFromDOM?: boolean
   shouldDecodeTags?: boolean
   shouldDecodeNewlines?: boolean
@@ -24,11 +33,14 @@ export type CompilerOptions = {
   outputSourceRange?: boolean
   shouldKeepComment?: boolean
 
-  // runtime user-configurable
+  // region 运行时用户可配置选项
+  /** 定义模板分隔符 */
   delimiters?: [string, string] // template delimiters
-  comments?: boolean // preserve comments in template
+  /** 是否保留模板中的注释 */
+  comments?: boolean 
+  // endregion
 
-  // for ssr optimization compiler
+  /** 针对 SSR 优化编译器的选项，用于SSR优化的作用域ID。 */
   scopeId?: string
 
   // SFC analyzed script bindings from `compileScript()`

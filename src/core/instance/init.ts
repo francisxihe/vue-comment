@@ -42,9 +42,8 @@ export function initMixin(Vue: typeof Component) {
       // optimize internal component instantiation
       // since dynamic options merging is pretty slow, and none of the
       // internal component options needs special treatment.
-      //优化内部组件实例化
-      //因为动态选项合并非常慢，没有一个是内部组件选项需要特殊处理。
-      //初始化内部组件
+      // 优化内部组件实例化
+      // 因为动态选项合并非常慢，并且内部组件选项都不需要特殊处理
       initInternalComponent(vm, options as any)
     } else {
       vm.$options = mergeOptions(
@@ -111,16 +110,17 @@ export function initInternalComponent(
 
 export function resolveConstructorOptions(Ctor: typeof Component) {
   let options = Ctor.options
+  // 如果存在父类
   if (Ctor.super) {
+    // 调用 resolveConstructorOptions 来获取父类的选项。
     const superOptions = resolveConstructorOptions(Ctor.super)
     const cachedSuperOptions = Ctor.superOptions
     if (superOptions !== cachedSuperOptions) {
-      // super option changed,
-      // need to resolve new options.
+      // 父组件option发生变化，需要解决新的option
       Ctor.superOptions = superOptions
-      // check if there are any late-modified/attached options (#4976)
+      // 检查是否有任何后期修改/附加的选项 (#4976)
       const modifiedOptions = resolveModifiedOptions(Ctor)
-      // update base extend options
+      // 更新基础扩展选项
       if (modifiedOptions) {
         extend(Ctor.extendOptions, modifiedOptions)
       }
@@ -137,8 +137,10 @@ function resolveModifiedOptions(
   Ctor: typeof Component
 ): Record<string, any> | null {
   let modified
+  // 从Ctor获取其最新选项和封闭选项
   const latest = Ctor.options
   const sealed = Ctor.sealedOptions
+  // 比较latest和sealed，找到修改项
   for (const key in latest) {
     if (latest[key] !== sealed[key]) {
       if (!modified) modified = {}
