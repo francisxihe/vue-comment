@@ -126,7 +126,7 @@ export function genElement(el: ASTElement, state: CodegenState): string {
 function checkBindingType(bindings: BindingMetadata, key: string) {
   const camelName = camelize(key)
   const PascalName = capitalize(camelName)
-  const checkType = (type) => {
+  const checkType = type => {
     if (bindings[key] === type) {
       return key
     }
@@ -259,7 +259,7 @@ export function genFor(
     state.warn(
       `<${el.tag} v-for="${alias} in ${exp}">: component lists rendered with ` +
         `v-for should have explicit keys. ` +
-        `See https://v2.vuejs.org/v2/guide/list.html#key for more info.`,
+        `See https://vuejs.org/guide/list.html#key for more info.`,
       el.rawAttrsMap['v-for'],
       true /* tip */
     )
