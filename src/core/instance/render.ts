@@ -32,14 +32,13 @@ export function initRender(vm: Component) {
         vm.$slots
       )
     : emptyObject
-  // bind the createElement fn to this instance
-  // so that we get proper render context inside it.
-  // args order: tag, data, children, normalizationType, alwaysNormalize
-  // internal version is used by render functions compiled from templates
+  // 将 createElement fn 绑定到此实例
+  // 这样我们就可以在其中获得正确的渲染上下文
+  // 参数顺序：标签、数据、子项、normalizationType、alwaysNormalize
+  // 内部版本由从模板编译的渲染函数使用
   // @ts-expect-error
   vm._c = (a, b, c, d) => createElement(vm, a, b, c, d, false)
-  // normalization is always applied for the public version, used in
-  // user-written render functions.
+  // 规范化始终应用于公共版本，用于用户编写的渲染函数。
   // @ts-expect-error
   vm.$createElement = (a, b, c, d) => createElement(vm, a, b, c, d, true)
 

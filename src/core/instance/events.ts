@@ -21,17 +21,22 @@ export function initEvents(vm: Component) {
 
 let target: any
 
+// 注册事件监听器
 function add(event, fn) {
   target.$on(event, fn)
 }
 
+// 移除事件监听器
 function remove(event, fn) {
   target.$off(event, fn)
 }
 
+// 处理只执行一次的事件
 function createOnceHandler(event, fn) {
+  // 定义_target存储当前的target，onceHandler target可能已经指向其他vm实例
   const _target = target
   return function onceHandler() {
+    // Vue的事件监听器中，通常不需要使用this，所以 fn.apply 第一个参数传入null
     const res = fn.apply(null, arguments)
     if (res !== null) {
       _target.$off(event, onceHandler)

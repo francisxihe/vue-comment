@@ -8,19 +8,20 @@ export function resolveSlots(
   children: Array<VNode> | null | undefined,
   context: Component | null
 ): { [key: string]: Array<VNode> } {
+  // 函数检查 children 是否为空或没有元素，如果是，没有子节点意味着没有插槽内容直接返回一个空对象
   if (!children || !children.length) {
     return {}
   }
   const slots: Record<string, any> = {}
+  // 遍历子节点
   for (let i = 0, l = children.length; i < l; i++) {
     const child = children[i]
     const data = child.data
-    // remove slot attribute if the node is resolved as a Vue slot node
+    // 一旦解析为插槽移除slot属性
     if (data && data.attrs && data.attrs.slot) {
       delete data.attrs.slot
     }
-    // named slots should only be respected if the vnode was rendered in the
-    // same context.
+    // 检查子节点是否具有与当前上下文相匹配的 context 或 fnContext，确保只处理属于当前上下文的节点
     if (
       (child.context === context || child.fnContext === context) &&
       data &&
@@ -29,16 +30,19 @@ export function resolveSlots(
       const name = data.slot
       const slot = slots[name] || (slots[name] = [])
       if (child.tag === 'template') {
+        // 如果待插入节点是 <template> 标签，它的子节点会被加入到对应的插槽数组中
         slot.push.apply(slot, child.children || [])
       } else {
+        // 直接加入待插入节点本身
         slot.push(child)
       }
     } else {
       ;(slots.default || (slots.default = [])).push(child)
     }
   }
-  // ignore slots that contains only whitespace
+  // 遍历slots属性
   for (const name in slots) {
+    // 如果一个插槽只包含空白节点（如纯文本空白节点），则该插槽会被删除。
     if (slots[name].every(isWhitespace)) {
       delete slots[name]
     }
