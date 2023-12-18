@@ -8,28 +8,45 @@ import type { Component } from 'types/component'
  */
 export interface Config {
   // user
+  /** 自定义选项合并策略的对象 */ 
   optionMergeStrategies: { [key: string]: Function }
+  /** 设置为 `true` 时，Vue 将不会显示所有的警告信息  */
   silent: boolean
+  /** 设置为 `false` 可以阻止 Vue 在启动时生成生产提示  */
   productionTip: boolean
+  /** 启用性能追踪  */
   performance: boolean
+  /** 允许 Vue.js devtools 检查应用  */
   devtools: boolean
+  /** 自定义处理捕获到的错误的函数  */
   errorHandler?: (err: Error, vm: Component | null, info: string) => void
+  /** 自定义处理 Vue 警告的函数  */
   warnHandler?: (msg: string, vm: Component | null, trace: string) => void
+  /** 可以使 Vue 忽略在 Vue 外部定义的自定义元素  */
   ignoredElements: Array<string | RegExp>
+  /** 自定义键盘事件的别名  */
   keyCodes: { [key: string]: number | Array<number> }
 
   // platform
+  /** 检查给定的标签是否是保留的标签 */ 
   isReservedTag: (x: string) => boolean | undefined
+  /** 检查给定的属性是否是保留的属性 */ 
   isReservedAttr: (x: string) => true | undefined
+  /** 处理特定平台的标签名 */ 
   parsePlatformTagName: (x: string) => string
+  /** 检查是否是未知的元素 */ 
   isUnknownElement: (x: string) => boolean
+  /** 获取元素的命名空间 */ 
   getTagNamespace: (x: string) => string | undefined
+  /** 检查是否必须使用属性而不是属性绑定 */ 
   mustUseProp: (tag: string, type?: string | null, name?: string) => boolean
 
   // private
+  /** 设置组件的更新策略，当为 `true` 时，组件的更新是异步的。 */
   async: boolean
 
   // legacy
+  /** 定义 Vue 实例生命周期钩子的数组。 */
   _lifecycleHooks: Array<string>
 }
 

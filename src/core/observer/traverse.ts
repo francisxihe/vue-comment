@@ -10,6 +10,7 @@ const seenObjects = new Set()
  * getters, so that every nested property inside the object
  * is collected as a "deep" dependency.
  */
+/** 递归地访问对象的所有属性，确保这些属性被 Vue 的响应式系统追踪。 */
 export function traverse(val: any) {
   _traverse(val, seenObjects)
   seenObjects.clear()
