@@ -23,7 +23,7 @@ const SIMPLE_NORMALIZE = 1
 const ALWAYS_NORMALIZE = 2
 
 /**
- * 创建虚拟节点（VNode）的包装函数，提供更灵活的接口
+ * 创建虚拟节点（VNode）的包装函数，提供更灵活的调用方式
  * @param {Component} context - 表示组件的上下文，通常是当前 Vue 组件的实例
  * @param {any} tag - 表示要创建的标签名，可以是字符串（如 'div'）、组件对象或函数。
  * @param {any} data - 包含了该节点的属性、指令、事件监听器等数据.

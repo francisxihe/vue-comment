@@ -14,10 +14,15 @@ export type VNodeChildren =
  * @internal
  */
 export type VNodeComponentOptions = {
+  /** 指向组件构造函数的引用 */
   Ctor: typeof Component
+  /** 传递给组件的props的数据 */
   propsData?: Object
+  /** 绑定到该组件上的事件监听器 */
   listeners?: Record<string, Function | Function[]>
+  /** 传递给组件的所有子节点 */
   children?: Array<VNode>
+  /** 组件的标签名，针对动态组件、抽象组件等情况 */
   tag?: string
 }
 

@@ -3,12 +3,16 @@ import type { Component } from 'types/component'
 
 /**
  * Runtime helper for resolving raw children VNodes into a slot object.
+ * 将原始子 VNode 解析为槽对象的功能函数
+ * @param children 父组件传递给子组件的所有子节点
+ * @param context 当前组件的上下文
+ * @returns 
  */
 export function resolveSlots(
   children: Array<VNode> | null | undefined,
   context: Component | null
 ): { [key: string]: Array<VNode> } {
-  // 函数检查 children 是否为空或没有元素，如果是，没有子节点意味着没有插槽内容直接返回一个空对象
+  // children 如果为空或没有元素说明没有子节点，意味着没有插槽内容直接返回一个空对象
   if (!children || !children.length) {
     return {}
   }
